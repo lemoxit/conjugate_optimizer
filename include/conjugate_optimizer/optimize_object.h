@@ -1,13 +1,13 @@
 /*
  * @Author: lemoxit
  * @Date: 2020-04-28 23:30:30
- * @LastEditTime: 2020-04-29 01:28:36
+ * @LastEditTime: 2020-04-29 02:01:28
  * @LastEditors: lemoxit
  */
 
 #ifndef _OPTIMIZE_OBJECT_
 #define _OPTIMIZE_OBJECT_
-
+#include <string>
 template <class StateType>
 class OptimizeObject {
  public:
@@ -30,6 +30,11 @@ class OptimizeObject {
     state_ = state_ + step_size * dir;
     value_ = ComputeValue(state_);
     gradient_ = ComputeGradient(state_);
+  }
+  const std::string DebugString() const {
+    return "state: " + std::to_string(state_) +
+           "\nvalue: " + std::to_string(value_) +
+           "\ngradient : " + std::to_string(gradient_);
   }
 
  protected:

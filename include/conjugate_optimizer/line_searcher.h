@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-28 23:30:30
- * @LastEditTime: 2020-04-29 01:30:23
+ * @LastEditTime: 2020-04-29 02:23:57
  * @LastEditors: lemoxit
  * @Description: In User Settings Edit
  * @FilePath: /conjugate_optimizer/include/conjugate_optimizer/line_searcher.h
@@ -27,7 +27,13 @@ class WolfeLineSearcher : public LineSearcher<StateType> {
   using DirectionType = StateType;
   double FindStepSize(const DirectionType& dir,
                       OptimizeObject<StateType>* obj) override {
-    return 0.1;  // TODO(lemoxit)
+    static constexpr double c1 = 0.3; //TODO(lemoxit) cfg
+    static constexpr double c2 = 0.6;
+    static constexpr double alpha_decay_rate = 0.5;
+    // while(1) {
+      
+    // }
+    return 1.0;  // TODO(lemoxit) impl
   }
 };
 
@@ -37,7 +43,7 @@ class StrongWolfeLineSearcher : public LineSearcher<StateType> {
   using DirectionType = StateType;
   double FindStepSize(const DirectionType& dir,
                       OptimizeObject<StateType>* obj) override {
-    return 0.1;  // TODO(lemoxit)
+    return 1.0;  // TODO(lemoxit) impl
   }
 };
 
@@ -47,7 +53,7 @@ class ArmijoLineSearcher : public LineSearcher<StateType> {
   using DirectionType = StateType;
   double FindStepSize(const DirectionType& dir,
                       OptimizeObject<StateType>* obj) override {
-    return 0.1;  // TODO(lemoxit)
+    return 1.0;  // TODO(lemoxit) impl
   }
 };
 #endif  // _LINE_SEARCHER_

@@ -1,7 +1,7 @@
 /*
  * @Author: lemoxit
  * @Date: 2020-04-28 23:30:30
- * @LastEditTime: 2020-04-29 01:29:21
+ * @LastEditTime: 2020-04-29 01:47:34
  * @LastEditors: lemoxit
  * @Description:
  */
@@ -10,10 +10,9 @@
 
 #include <iostream>
 
-
 class QuardOptimizeObject : public OptimizeObject<double> {
  public:
-  QuardOptimizeObject(const double& ini_guess)
+  explicit QuardOptimizeObject(const double& ini_guess)
       : OptimizeObject<double>{ini_guess} {
     value_ = ComputeValue(state_);
     gradient_ = ComputeGradient(state_);
@@ -30,5 +29,8 @@ class QuardOptimizeObject : public OptimizeObject<double> {
 int main() {
   std::cout << "Test Begin" << std::endl;
   QuardOptimizeObject obj{3.0};
+  ConjugateOptimizer<double> optimizer{OptimizePara{}};
+  optimizer.Optimize(&obj);
+  std::cout << "Result: " << obj.state() << std::endl;
   return 0;
 }
