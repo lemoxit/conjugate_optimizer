@@ -14,9 +14,9 @@
 
 #include "line_searcher.h"
 struct OptimizePara {
-  double converge_tolerance = 1.0e-5;
+  double converge_tolerance = 1.0e-6;
   int max_iteration_num = 50;
-  LineSearchType line_search_type = LineSearchType::kWolfe;
+  LineSearchType line_search_type = LineSearchType::kBackTracing;
   bool debug = true;
 };
 
@@ -29,10 +29,9 @@ enum ErrorCode : int {
 struct Status {
   int iteration = 0;
   ErrorCode error_code = ErrorCode::kError;
-  // TODO(lemoxit) impl
   const std::string DebugString() const {
-    return "Iteration: " + std::to_string(iteration) +
-           "\nErrorCode: " + std::to_string(static_cast<int>(error_code));
+    return "Iteration: " + std::to_string(iteration) + "\nErrorCode: " +
+           std::to_string(static_cast<int>(error_code));
   }
 };
 
@@ -56,8 +55,12 @@ class ConjugateOptimizer {
         line_searcher_.reset(new StrongWolfeLineSearcher<StateType>());
         break;
       }
+      case LineSearchType::kBackTracing: {
+        line_searcher_.reset(new BackTracingLineSearcher<StateType>());
+        break;
+      }
       default:
-        line_searcher_.reset(new WolfeLineSearcher<StateType>());
+        line_searcher_.reset(new BackTracingLineSearcher<StateType>());
     }
   }
 
@@ -67,7 +70,7 @@ class ConjugateOptimizer {
 
     while (status.iteration < para_.max_iteration_num) {
       if (/*direction.InnerProduct(direction) */ direction * direction <
-          para_.converge_tolerance) {  // TODO(lemoxit) converge conditions
+          para_.converge_tolerance) {
         status.error_code = ErrorCode::kSuccess;
         break;
       }
@@ -75,8 +78,7 @@ class ConjugateOptimizer {
         std::cout << obj->DebugString() << std::endl;
       }
       GradientType gradient = obj->gradient();
-      const double step_size = line_searcher_->FindStepSize(direction, obj);
-      obj->UpdateByStep(direction, step_size);
+      line_searcher_->SearchAndUpdateObject(direction, obj);
       GradientType gradient_new = obj->gradient();
       // TODO(lemoxit) inner_product solution
       //   double beta = gradient_new.InnerProduct(gradient_new - gradient) /

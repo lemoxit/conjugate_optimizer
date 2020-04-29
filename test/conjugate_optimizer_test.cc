@@ -28,8 +28,10 @@ class QuardOptimizeObject : public OptimizeObject<double> {
 
 int main() {
   std::cout << "Test Begin" << std::endl;
-  QuardOptimizeObject obj{3.0};
-  ConjugateOptimizer<double> optimizer{OptimizePara{}};
+  QuardOptimizeObject obj{3.3};
+  OptimizePara para;
+  para.line_search_type = LineSearchType::kWolfe;
+  ConjugateOptimizer<double> optimizer{para};
   optimizer.Optimize(&obj);
   std::cout << "Result: " << obj.state() << std::endl;
   return 0;

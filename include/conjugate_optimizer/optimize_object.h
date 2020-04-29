@@ -1,8 +1,13 @@
 /*
- * @Author: lemoxit
- * @Date: 2020-04-28 23:30:30
- * @LastEditTime: 2020-04-29 02:01:28
- * @LastEditors: lemoxit
+ * File: optimize_object.h
+ * Created Date: 2020-04-29
+ * Author: Lemoxit
+ * -----
+ * Last Modified: Wednesday April 29th 2020 12:52:59 pm
+ * Modified By: Lemoxit at <yangshuai93@hotmail.com>
+ * -----
+ * Copyright (c) 2020
+ * License: BSD
  */
 
 #ifndef _OPTIMIZE_OBJECT_
@@ -26,20 +31,21 @@ class OptimizeObject {
 
   inline const GradientType gradient() const { return gradient_; }
 
-  void UpdateByStep(const DirectionType& dir, const double step_size) {
-    state_ = state_ + step_size * dir;
-    value_ = ComputeValue(state_);
-    gradient_ = ComputeGradient(state_);
-  }
+  inline void set_state(const StateType& s) { state_ = s; }
+
+  inline void set_value(const ObjectValue& v) { value_ = v; }
+
+  inline void set_gradient(const GradientType& g) { gradient_ = g; }
+
+  virtual const GradientType ComputeGradient(const StateType&) const = 0;
+  virtual const ObjectValue ComputeValue(const StateType&) const = 0;
+
   const std::string DebugString() const {
-    return "state: " + std::to_string(state_) +
-           "\nvalue: " + std::to_string(value_) +
-           "\ngradient : " + std::to_string(gradient_);
+    return "state: " + std::to_string(state_) + "\nvalue: " +
+           std::to_string(value_) + "\ngradient : " + std::to_string(gradient_);
   }
 
  protected:
-  virtual const GradientType ComputeGradient(const StateType&) const = 0;
-  virtual const ObjectValue ComputeValue(const StateType&) const = 0;
   StateType state_;
   ObjectValue value_;
   GradientType gradient_;
