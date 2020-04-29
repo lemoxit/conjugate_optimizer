@@ -1,0 +1,4 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+PROJECT(conjugate_optimizer)
+include_directories(include)
+add_executable(cg_optimizer_test test/conjugate_optimizer_test.cc)
