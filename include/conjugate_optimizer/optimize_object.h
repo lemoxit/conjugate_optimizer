@@ -39,6 +39,8 @@ class OptimizeObject {
 
   virtual const GradientType ComputeGradient(const StateType&) const = 0;
   virtual const ObjectValue ComputeValue(const StateType&) const = 0;
+  virtual const double InnerProduct(const DirectionType&,
+                                    const DirectionType&) const = 0;
 
   const std::string DebugString() const {
     return "state: " + std::to_string(state_) + "\nvalue: " +

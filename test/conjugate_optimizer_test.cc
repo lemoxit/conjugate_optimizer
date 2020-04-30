@@ -24,6 +24,9 @@ class QuardOptimizeObject : public OptimizeObject<double> {
   const double ComputeValue(const double& x) const override {
     return (x - 1.0) * (x - 1.0) * 0.5;
   }
+  const double InnerProduct(const double& a, const double& b) const override {
+    return a * b;
+  }
 };
 
 int main() {

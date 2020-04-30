@@ -69,22 +69,20 @@ class ConjugateOptimizer {
     DirectionType direction = -obj->gradient();
 
     while (status.iteration < para_.max_iteration_num) {
-      if (/*direction.InnerProduct(direction) */ direction * direction <
-          para_.converge_tolerance) {
+      GradientType gradient = obj->gradient();
+      const double gradient_inner_product =
+          obj->InnerProduct(gradient, gradient);
+      if (gradient_inner_product < para_.converge_tolerance) {
         status.error_code = ErrorCode::kSuccess;
         break;
       }
       if (para_.debug) {
         std::cout << obj->DebugString() << std::endl;
       }
-      GradientType gradient = obj->gradient();
       line_searcher_->SearchAndUpdateObject(direction, obj);
       GradientType gradient_new = obj->gradient();
-      // TODO(lemoxit) inner_product solution
-      //   double beta = gradient_new.InnerProduct(gradient_new - gradient) /
-      //                 gradient.InnerProduct(gradient);
-      double beta =
-          gradient_new * (gradient_new - gradient) / (gradient * gradient);
+      double beta = obj->InnerProduct(gradient_new, gradient_new - gradient) /
+                    gradient_inner_product;
       beta = std::max(beta, 0.0);
       direction = -gradient_new + beta * direction;
       ++status.iteration;
