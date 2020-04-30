@@ -1,9 +1,8 @@
 # Conjugate Optimizer implementation (Nolinear)
 Using Polak-Ribiere CG method to update $\beta$
 ## Note
-* StateType in class template must support operator +, -,  double * StateType and StateType * double
-* You should provide ComputeValue(StateType) and ComputeGradient(StateType), InnerProduct(State,State)
-* DebugString() may not work for your own StateType
+* StateType in class template must support operator +, -, StateType * double, DebugString(), and InnerProduct(StateType)
+* You should provide ComputeValue(StateType) and ComputeGradient(StateType) in OptimizeObject
 
 ## TODO
 * Optimize performance of line search
