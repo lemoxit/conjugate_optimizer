@@ -10,8 +10,18 @@
 #ifndef _LINE_SEARCHER_
 #define _LINE_SEARCHER_
 #include "optimize_object.h"
+#include <algorithm>
 
 enum LineSearchType { kWolfe, kArmijo, kStrongWolfe, kBackTracing };
+struct LineSearchPara {
+  int max_iteration_num = 50;
+  double min_step_size = 1.0e-4;
+  double step_decay_ratio = 0.5;
+  double initial_step_size = 1.0;
+  double c1 = 0.1;   ///< for wolfe condition range:(0,c2)
+  double c2 = 0.9;   ///< for wolfe confition range:(c1,1)
+  double rho = 0.3;  ///< for armijo condition range:(0, 0.5)
+};
 template <class StateType>
 class LineSearcher {
  public:
@@ -25,21 +35,18 @@ template <class StateType>
 class WolfeLineSearcher : public LineSearcher<StateType> {
  public:
   using DirectionType = StateType;
+  explicit WolfeLineSearcher(const LineSearchPara& para) : para_{para} {}
+  virtual ~WolfeLineSearcher() = default;
   void SearchAndUpdateObject(const DirectionType& dir,
                              OptimizeObject<StateType>* obj) override {
-    static constexpr double kInitialStepSize = 1.0;
-    static constexpr double kDecayRatio = 0.5;
-    static constexpr double kC1 = 0.1;  //(0,c2)
-    static constexpr double kC2 = 0.9;  //(c1,1)
-    static constexpr double kMinStep = 1.0e-4;
-    double step = kInitialStepSize;
+    double step = para_.initial_step_size;
     const double m = obj->InnerProduct(dir, obj->gradient());
-    const double m1 = m * kC1;
-    const double m2 = m * kC2;
+    const double m1 = m * para_.c1;
+    const double m2 = m * para_.c2;
     auto new_state = obj->state();
     auto new_value = obj->value();
     auto new_gradient = obj->gradient();
-    while (step > kMinStep) {
+    while (step > para_.min_step_size) {
       new_state = obj->state() + step * dir;
       new_value = obj->ComputeValue(new_state);
       new_gradient = obj->ComputeGradient(new_state);
@@ -47,33 +54,33 @@ class WolfeLineSearcher : public LineSearcher<StateType> {
           obj->InnerProduct(new_gradient, dir) >= m2) {
         break;
       }
-      step *= kDecayRatio;
+      step *= para_.step_decay_ratio;
     }
     obj->set_state(new_state);
     obj->set_value(new_value);
     obj->set_gradient(new_gradient);
   }
+
+ private:
+  LineSearchPara para_;
 };
 
 template <class StateType>
 class StrongWolfeLineSearcher : public LineSearcher<StateType> {
  public:
   using DirectionType = StateType;
+  explicit StrongWolfeLineSearcher(const LineSearchPara& para) : para_{para} {}
+  virtual ~StrongWolfeLineSearcher() = default;
   void SearchAndUpdateObject(const DirectionType& dir,
                              OptimizeObject<StateType>* obj) override {
-    static constexpr double kInitialStepSize = 1.0;
-    static constexpr double kDecayRatio = 0.5;
-    static constexpr double kC1 = 0.1;  //(0,c2)
-    static constexpr double kC2 = 0.9;  //(c1,1)
-    static constexpr double kMinStep = 1.0e-4;
-    double step = kInitialStepSize;
+    double step = para_.initial_step_size;
     const double m = obj->InnerProduct(dir, obj->gradient());
-    const double m1 = m * kC1;
-    const double m2 = std::fabs(m * kC2);
+    const double m1 = m * para_.c1;
+    const double m2 = std::fabs(m * para_.c2);
     auto new_state = obj->state();
     auto new_value = obj->value();
     auto new_gradient = obj->gradient();
-    while (step > kMinStep) {
+    while (step > para_.min_step_size) {
       new_state = obj->state() + step * dir;
       new_value = obj->ComputeValue(new_state);
       new_gradient = obj->ComputeGradient(new_state);
@@ -81,72 +88,77 @@ class StrongWolfeLineSearcher : public LineSearcher<StateType> {
           std::fabs(obj->InnerProduct(new_gradient, dir)) <= m2) {
         break;
       }
-      step *= kDecayRatio;
+      step *= para_.step_decay_ratio;
     }
     obj->set_state(new_state);
     obj->set_value(new_value);
     obj->set_gradient(new_gradient);
   }
+
+ private:
+  LineSearchPara para_;
 };
 
 template <class StateType>
 class ArmijoLineSearcher : public LineSearcher<StateType> {
  public:
   using DirectionType = StateType;
+  explicit ArmijoLineSearcher(const LineSearchPara& para) : para_{para} {}
+  virtual ~ArmijoLineSearcher() = default;
   void SearchAndUpdateObject(const DirectionType& dir,
                              OptimizeObject<StateType>* obj) override {
-    static constexpr double kInitialStepSize = 1.0;
-    static constexpr double kDecayRatio = 0.5;
-    static constexpr double kRho = 0.2;  //(0, 0.5)
-    static constexpr double kMinStep = 1.0e-4;
-    double step = kInitialStepSize;
+    double step = para_.initial_step_size;
     const double m = obj->InnerProduct(dir, obj->gradient());
-    const double m1 = m * kRho;
-    const double m2 = m * (1.0 - kRho);
+    const double m1 = m * para_.rho;
+    const double m2 = m * (1.0 - para_.rho);
     auto new_state = obj->state();
     auto new_value = obj->value();
-    while (step > kMinStep) {
+    while (step > para_.min_step_size) {
       new_state = obj->state() + step * dir;
       new_value = obj->ComputeValue(new_state);
       if (new_value <= obj->value() + step * m1 &&
           new_value >= obj->value() + step * m2) {
         break;
       }
-      step *= kDecayRatio;
+      step *= para_.step_decay_ratio;
     }
     obj->set_state(new_state);
     obj->set_value(new_value);
     const auto gradient = obj->ComputeGradient(new_state);
     obj->set_gradient(gradient);
   }
+
+ private:
+  LineSearchPara para_;
 };
 
 template <class StateType>
 class BackTracingLineSearcher : public LineSearcher<StateType> {
  public:
   using DirectionType = StateType;
+  explicit BackTracingLineSearcher(const LineSearchPara& para) : para_{para} {}
+  virtual ~BackTracingLineSearcher() = default;
   void SearchAndUpdateObject(const DirectionType& dir,
                              OptimizeObject<StateType>* obj) override {
-    static constexpr double kInitialStepSize = 1.0;
-    static constexpr double kDecayRatio = 0.5;
-    static constexpr double kC1 = 0.3;
-    static constexpr double kMinStep = 1.0e-4;
-    double step = kInitialStepSize;
-    const double m = obj->InnerProduct(dir, obj->gradient()) * kC1;
+    double step = para_.initial_step_size;
+    const double m = obj->InnerProduct(dir, obj->gradient()) * para_.c1;
     auto new_state = obj->state();
     auto new_value = obj->value();
-    while (step > kMinStep) {
+    while (step > para_.min_step_size) {
       new_state = obj->state() + step * dir;
       new_value = obj->ComputeValue(new_state);
       if (new_value <= obj->value() + step * m) {
         break;
       }
-      step *= kDecayRatio;
+      step *= para_.step_decay_ratio;
     }
     obj->set_state(new_state);
     obj->set_value(new_value);
     const auto gradient = obj->ComputeGradient(new_state);
     obj->set_gradient(gradient);
   }
+
+ private:
+  LineSearchPara para_;
 };
 #endif  // _LINE_SEARCHER_

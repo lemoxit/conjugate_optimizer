@@ -17,6 +17,7 @@ struct OptimizePara {
   double converge_tolerance = 1.0e-6;
   int max_iteration_num = 50;
   LineSearchType line_search_type = LineSearchType::kBackTracing;
+  LineSearchPara line_search_para;
   bool debug = true;
 };
 
@@ -44,23 +45,28 @@ class ConjugateOptimizer {
   explicit ConjugateOptimizer(const OptimizePara& para) : para_{para} {
     switch (para_.line_search_type) {
       case LineSearchType::kWolfe: {
-        line_searcher_.reset(new WolfeLineSearcher<StateType>());
+        line_searcher_.reset(
+            new WolfeLineSearcher<StateType>(para_.line_search_para));
         break;
       }
       case LineSearchType::kArmijo: {
-        line_searcher_.reset(new ArmijoLineSearcher<StateType>());
+        line_searcher_.reset(
+            new ArmijoLineSearcher<StateType>(para_.line_search_para));
         break;
       }
       case LineSearchType::kStrongWolfe: {
-        line_searcher_.reset(new StrongWolfeLineSearcher<StateType>());
+        line_searcher_.reset(
+            new StrongWolfeLineSearcher<StateType>(para_.line_search_para));
         break;
       }
       case LineSearchType::kBackTracing: {
-        line_searcher_.reset(new BackTracingLineSearcher<StateType>());
+        line_searcher_.reset(
+            new BackTracingLineSearcher<StateType>(para_.line_search_para));
         break;
       }
       default:
-        line_searcher_.reset(new BackTracingLineSearcher<StateType>());
+        line_searcher_.reset(
+            new BackTracingLineSearcher<StateType>(para_.line_search_para));
     }
   }
 
