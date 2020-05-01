@@ -72,12 +72,11 @@ class ConjugateOptimizer {
 
   Status Optimize(OptimizeObject<StateType>* obj) {
     Status status;
-    DirectionType direction = -obj->gradient();
+    DirectionType direction = obj->gradient() * (-1.0);
 
     while (status.iteration < para_.max_iteration_num) {
       GradientType gradient = obj->gradient();
-      const double gradient_inner_product =
-          obj->InnerProduct(gradient, gradient);
+      const double gradient_inner_product = gradient.InnerProduct(gradient);
       if (gradient_inner_product < para_.converge_tolerance) {
         status.error_code = ErrorCode::kSuccess;
         break;
@@ -87,10 +86,10 @@ class ConjugateOptimizer {
       }
       line_searcher_->SearchAndUpdateObject(direction, obj);
       GradientType gradient_new = obj->gradient();
-      double beta = obj->InnerProduct(gradient_new, gradient_new - gradient) /
+      double beta = gradient_new.InnerProduct(gradient_new - gradient) /
                     gradient_inner_product;
       beta = std::max(beta, 0.0);
-      direction = -gradient_new + beta * direction;
+      direction = direction * beta - gradient_new;
       ++status.iteration;
     }
     std::cout << status.DebugString() << std::endl;
