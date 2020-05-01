@@ -7,6 +7,7 @@
  */
 
 #include "conjugate_optimizer/conjugate_optimizer.h"
+#include "conjugate_optimizer/optimize_state.h"
 
 #include <iostream>
 
@@ -37,5 +38,12 @@ int main() {
   ConjugateOptimizer<double> optimizer{para};
   optimizer.Optimize(&obj);
   std::cout << "Result: " << obj.state() << std::endl;
+  OptimizeState<3> st({1, 2, 3});
+  std::cout << "st: " << st.DebugString() << std::endl;
+  std::cout << "+: " << (st + st).DebugString() << std::endl;
+  std::cout << "-: " << (st - st).DebugString() << std::endl;
+  std::cout << "*: " << (st * 2.0).DebugString() << std::endl;
+  std::cout << "product: " << st.InnerProduct(st) << std::endl;
+
   return 0;
 }
