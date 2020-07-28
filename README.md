@@ -7,3 +7,4 @@ Using Polak-Ribiere CG method to update $\beta$
 ## TODO
 * Optimize performance of line search
 * Add error handling strategy
+* Auto-diff of optimize object
